@@ -37,15 +37,15 @@ class SimpleCNN(nn.Module):
 class ResNet18(nn.Module):
     def __init__(self):
         super(ResNet18, self).__init__()
-        self.base_model = models.resnet18(pretrained=True)
+        # Cargar el modelo preentrenado con el argumento actualizado
+        self.base_model = models.resnet18(weights='IMAGENET1K_V1')
+        # Cambiar la última capa a una salida de 1 neurona (para clasificación binaria)
         self.base_model.fc = nn.Linear(self.base_model.fc.in_features, 1)
 
     def forward(self, x):
         x = self.base_model(x)
-        x = torch.sigmoid(x)
-
-        return x
-
+        # No aplicar sigmoid aquí si usas BCEWithLogitsLoss
+        return x  # Retorna logits, ya que BCEWithLogitsLoss aplica sigmoid internamente
 
 class AdvancedCNN(nn.Module):
     def __init__(self):

@@ -1,3 +1,6 @@
+import os
+
+import pandas as pd
 import torch
 import wandb
 import numpy as np
@@ -152,33 +155,21 @@ def convert_to_serializable(obj):
     return obj
 
 
+def load_images(img_path, etiqueta):
+    """
+    Carga los paths de las imágenes en un directorio y les asigna una etiqueta.
 
+    :param img_path: Ruta al directorio que contiene las imágenes.
+    :param etiqueta: Etiqueta asignada a las imágenes (e.g., 'valida', 'invalida').
+    :return: DataFrame con dos columnas: 'etiqueta' y 'path'.
+    """
+    # Obtener lista de archivos en el directorio
+    image_files = [os.path.join(img_path, f) for f in os.listdir(img_path) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
-# Load the uploaded images
-image_front_path = '/mnt/data/imagen_1_frente.jpeg'
-image_back_path = '/mnt/data/imagen_1_dorso.jpeg'
+    # Crear DataFrame con las columnas 'etiqueta' y 'path'
+    df = pd.DataFrame({
+        'etiqueta': [etiqueta] * len(image_files),
+        'path': image_files
+    })
 
-image_front = cv2.imread(image_front_path)
-image_back = cv2.imread(image_back_path)
-
-
-def make_image_look_printed(image):
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Apply a GaussianBlur to simulate slight ink spread or imperfection
-    blurred = cv2.GaussianBlur(gray, (7, 7), 1.5)
-
-    # Add paper texture using noise
-    noise = np.random.normal(0, 25, gray.shape).astype(np.uint8)
-    noisy_image = cv2.add(blurred, noise)
-
-    # Add a slight yellow tint to simulate paper aging
-    sepia_filter = np.array([[0.272, 0.534, 0.131],
-                             [0.349, 0.686, 0.168],
-                             [0.393, 0.769, 0.189]])
-
-    sepia_image = cv2.transform(cv2.cvtColor(noisy_image, cv2.COLOR_GRAY2BGR), sepia_filter)
-    sepia_image = np.clip(sepia_image, 0, 255).astype(np.uint8)
-
-    return sepia_image
+    return df
